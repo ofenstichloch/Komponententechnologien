@@ -5,18 +5,11 @@ namespace Broker
 	public class Message
 	{
 
-		public enum Type {None, Generated, Solved, Register, Unregister};
-	/*	Instruction, what type of message is this?
-	 * 	0: Bullshit
-	 * 	1: Please solve
-	 *  2: Solved
-	 *  3: Register
-	 *  4: Unregister
-	 * 
-	 */
-		public byte instruction { get; set;}
+		public enum Instruction {None, Generated, Solved, Register, Unregister};
+        public enum Type { Broker, Generator, Solver, GUI};
+		public Instruction instruction { get; set;}
 		//Additional Info (how many solutions are there)
-		public byte info { get; set; }
+		public Type info { get; set; }
 		public int[][] sudoku { get; set; }
 		//URI of sender
 		public string origin { get; set; }
