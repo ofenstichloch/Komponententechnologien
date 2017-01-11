@@ -8,7 +8,7 @@ namespace Broker
 
 		public static void Main(string[] args)
 		{
-			Broker b = new Broker();	
+			Broker b = new Broker(true);	
 		}
 	}
 }

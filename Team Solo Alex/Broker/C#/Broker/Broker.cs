@@ -12,7 +12,7 @@ namespace Broker
         const string INQUEUE = "in";
         const string OUTEXCHANGE = "outExchange";
         const string CONFIG = "config";
-        const string SELFURI = "amqp://test:test@10.4.0.6:5672/broker";
+        const string SELFURI = "amqp://guest:guest@localhost:5672";
         ConnectionFactory rqFactory;
         IModel rqModel;
         IBasicProperties rqPPersistent;
@@ -35,10 +35,11 @@ namespace Broker
             Console.Out.WriteLine("Broker up and running");
         }
 
-        public Broker(bool stupid) : base()
+        public Broker(bool stupid) : this()
         {
+            Console.Out.WriteLine("Starting in stupid mode");
             this.stupid = stupid;
-
+            
         }
 
         /// <summary>
@@ -48,7 +49,12 @@ namespace Broker
         /// <returns>True on sucess</returns>
         public bool register(string instruction, string uri)
         {
-            string type = instruction.Split(' ')[1];
+            string type;
+            try { type = instruction.Split(' ')[1]; }
+            catch
+            {
+                type = instruction.Split(':')[1];
+            }
             Component.Type t = Component.Type.GUI;
             switch (type)
             {
@@ -115,9 +121,9 @@ namespace Broker
 
         public void processGenerated(Message m)
         {
-            try { registered.Find(x => x.uri == m.origin).busy = false; }
+            try { registered.Find(x => x.uri == m.sender).busy = false; }
             catch (NullReferenceException e) { }
-            m.origin = SELFURI;
+            m.sender = SELFURI;
             Component c = sendMessage(m, Component.Type.Solver);
             //Mark solver as busy
             //if no fitting component is currently registered, store it in queue to send it later
@@ -128,8 +134,8 @@ namespace Broker
 
         public void processSolved(Message m)
         {
-            registered.Find(x => x.uri == m.origin).busy = false;
-            m.origin = SELFURI;
+            registered.Find(x => x.uri == m.sender).busy = false;
+            m.sender = SELFURI;
             Component c = sendMessage(m, Component.Type.Generator);
             //Mark generator as busy
             //if no fitting component is currently registered, store it in queue to send it later
@@ -139,29 +145,45 @@ namespace Broker
 
         public Component sendMessage(Message m, Component.Type recipientType)
         {
+            String json = JsonConvert.SerializeObject(m);
+            byte[] body = System.Text.Encoding.Default.GetBytes(json);
+            if (recipientType == Component.Type.ALL)
+            {
+                foreach(Component c in registered)
+                {
+                    rqModel.BasicPublish(OUTEXCHANGE, c.id.ToString(), false, rqPPersistent, body);
+                }
+                Console.Out.WriteLine("Send:\t To all:\t" + json);
+                return null;
+            }
+            else if(recipientType == Component.Type.ALLEXCEPTBROKER)
+            {
+                foreach (Component c in registered)
+                {
+                    if (c.type != Component.Type.Broker)
+                    {
+                        rqModel.BasicPublish(OUTEXCHANGE, c.id.ToString(), false, rqPPersistent, body);
+                    }
+                }
+                Console.Out.WriteLine("Send:\t To all except broker:\t" + json);
+                return null;
+            }
             //try to find idling component
-            if (recipientType != Component.Type.ALLEXCEPTBROKER && recipientType != Component.Type.ALL)
+            else
             {
                 Component c = registered.Find(x => (x.type == recipientType && !x.busy));
                 //try to find a fitting (but busy) component
                 if (c == null) c = registered.Find(x => x.type == recipientType);
                 if (c != null)
                 {
-                    String json = JsonConvert.SerializeObject(m);
-                    byte[] body = System.Text.Encoding.Default.GetBytes(json);
+                    json = JsonConvert.SerializeObject(m);
+                    body = System.Text.Encoding.Default.GetBytes(json);
                     rqModel.BasicPublish(OUTEXCHANGE, c.id.ToString(), false, rqPPersistent, body);
                     Console.Out.WriteLine("Send:\t To " + recipientType.ToString() + ":\t" + json);
                 }
                 return c;
             }
-            else
-            {
-                String json = JsonConvert.SerializeObject(m);
-                byte[] body = System.Text.Encoding.Default.GetBytes(json);
-                rqModel.BasicPublish(OUTEXCHANGE, recipientType.ToString(), false, rqPPersistent, body);
-                Console.Out.WriteLine("Send:\t To "+recipientType.ToString()+":\t" + json);
-                return null;
-            }
+       
         }
 
         public void onRecieve(object sender, BasicDeliverEventArgs e)
@@ -174,10 +196,10 @@ namespace Broker
             switch (instruction)
             {
                 case Message.Instruction.REGISTER:
-                    register(m.instruction, m.origin);
+                    register(m.instruction, m.sender);
                     break;
                 case Message.Instruction.UNREGISTER:
-                    unregister(m.origin);
+                    unregister(m.sender);
                     break;
                 case Message.Instruction.SOLVE:
                     processGenerated(m);
@@ -190,7 +212,9 @@ namespace Broker
             {
                 try
                 {
-                    if (registered.Find(x => x.uri == m.origin).type != Component.Type.Broker)
+                    //Doesnt work this way, broker is never the sender
+                    //Todo: change to identify already sent messages (looping)
+                    if (registered.Find(x => x.uri == m.sender).type == Component.Type.Broker)
                     {
                         sendMessage(m, Component.Type.ALLEXCEPTBROKER);
                     }

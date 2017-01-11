@@ -18,7 +18,7 @@ namespace Broker
 		public string instruction { get; set;}
 		public int[] sudoku { get; set; }
 		//URI of sender
-		public string origin { get; set; }
+		public string sender { get; set; }
 
 		public String printSudoku()
 		{
