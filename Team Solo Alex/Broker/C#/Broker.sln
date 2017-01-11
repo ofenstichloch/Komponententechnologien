@@ -1,6 +1,7 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Broker", "Broker\Broker.csproj", "{F7100196-20F4-4C2A-8657-B971E4C52781}"
 EndProject
 Global
@@ -13,5 +14,8 @@ Global
 		{F7100196-20F4-4C2A-8657-B971E4C52781}.Debug|x86.Build.0 = Debug|x86
 		{F7100196-20F4-4C2A-8657-B971E4C52781}.Release|x86.ActiveCfg = Release|x86
 		{F7100196-20F4-4C2A-8657-B971E4C52781}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

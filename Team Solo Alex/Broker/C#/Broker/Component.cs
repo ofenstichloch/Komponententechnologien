@@ -3,7 +3,7 @@ namespace Broker
 {
 	public class Component
 	{
-        public enum Type { Broker, Generator, Solver, GUI };
+        public enum Type { Broker, Generator, Solver, GUI, ALLEXCEPTBROKER, ALL };
 
         public static int currentID = 0;
 
