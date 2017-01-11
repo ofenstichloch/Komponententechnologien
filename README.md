@@ -14,7 +14,7 @@ The components should communicate using a shared interface for messages. The Int
 | Field | Values | Description |
 | --- | --- | --- |
 | int instruction |  {0=None, 1=Generated, 2=Solved, 3=Register, 4=Unregister} | Describes the reason for this message. A generator sends "generated"-messages, a solver "solved". |
-| int type | { Broker, Generator, Solver, GUI} | Describes the type of component that is about to register/unregister, not used for non-registration messages |
+| int type | { Broker, Generator, Solver, GUI, OneSolution, MultipleSolutions, NoSolution} | Describes the type of component that is about to register/unregister, not used for non-registration messages |
 | int[][] sudoku |  | Array for the Sudoku-field |
 | string origin | URI | The URI of the component. This URI is where the foreign Camel-instance should connect to. |
 
