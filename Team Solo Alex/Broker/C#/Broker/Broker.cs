@@ -12,8 +12,9 @@ namespace Broker
         const string INQUEUE = "in";
         const string OUTEXCHANGE = "outExchange";
         const string CONFIG = "config";
-        const string SELFURI = "amqp://guest:guest@localhost:5672";
-        ConnectionFactory rqFactory;
+	const string SELFURI = "amqp://user:pw@136.199.51.111:5672";
+        const string MY = "rabbitmq://136.199.51.111/out?username=user&password=pw&queue=out&skipQueueDeclare=true";
+	ConnectionFactory rqFactory;
         IModel rqModel;
         IBasicProperties rqPPersistent;
         List<Component> registered;
@@ -123,7 +124,7 @@ namespace Broker
         {
             try { registered.Find(x => x.uri == m.sender).busy = false; }
             catch (NullReferenceException e) { }
-            m.sender = SELFURI;
+            m.sender = MY;
             Component c = sendMessage(m, Component.Type.Solver);
             //Mark solver as busy
             //if no fitting component is currently registered, store it in queue to send it later
@@ -135,7 +136,7 @@ namespace Broker
         public void processSolved(Message m)
         {
             registered.Find(x => x.uri == m.sender).busy = false;
-            m.sender = SELFURI;
+            m.sender = MY;
             Component c = sendMessage(m, Component.Type.Generator);
             //Mark generator as busy
             //if no fitting component is currently registered, store it in queue to send it later

@@ -11,12 +11,11 @@ public class CamelInstance {
 	static CamelContext context;
 	static ConnectionFactory factory;
 	//this is my queue to consume outgoing messages from
-	static final String OUTQUEUE = "rabbitmq://10.4.0.6/out?vhost=broker&username=test&password=test&queue=out&skipQueueDeclare=true";
-	
+	static final String OUTQUEUE = "rabbitmq://136.199.51.111/out?username=user&password=pw&queue=out&skipQueueDeclare=true";
 	public static void main(String[] args) throws Exception {
 		context = new DefaultCamelContext();
 		factory = new ConnectionFactory();
-		factory.setUri("amqp://test:test@10.4.0.6:5672/broker");
+		factory.setUri("amqp://user:pw@136.199.51.111:5672");
 		Connection conn = factory.newConnection();
 		Channel channel = conn.createChannel();
 		//setup config-consumer that consumes and processes config-messages from the broker
