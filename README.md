@@ -1,4 +1,5 @@
 # Komponententechnologien
+# This repository is deprecated, use https://github.com/SystemSoftware/Components2016 instead
 ## Contents 
 Following folders in this Repo: 
 **Rest-camel-RMI Adder**: An example program that offers a REST-Interface to add numbers.
